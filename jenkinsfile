@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Set any environment variables here, for example, Node.js version
-        NODE_VERSION = '14.x'
+        NODE_VERSION = '22.11.0'
     }
 
     tools {
