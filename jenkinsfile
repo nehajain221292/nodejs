@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://git.epam.com/neha_jain/my-node-app.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Run Application') {
+            steps {
+                sh 'npm start'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Application deployed successfully!'
+        }
+        failure {
+            echo 'Build or deployment failed.'
+        }
+    }
+}
