@@ -1,78 +1,54 @@
 pipeline {
-    agent any  // Runs the pipeline on any available agent
+    agent any
 
     environment {
-        // Set any environment variables here, for example, Node.js version
         NODE_VERSION = '22.11.0'
     }
 
     tools {
-        // Automatically install Node.js using the specified version from the Jenkins tool installation configuration
-        nodejs "${NODE_VERSION}"
+        nodejs 'nodejs-22.11.0'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                // Checkout the code from GitHub or any Git repository
-                git 'https://github.com/nehajain221292/nodejs.git'  // Replace with your repo URL
+                git 'https://github.com/nehajain221292/nodejs.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Install dependencies using npm
-                script {
-                    // If using npm
-                    sh 'npm install'
-                }
+                bat 'npm install'  // Use 'bat' instead of 'sh' for Windows
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Run tests, assuming you have a test script in your package.json
-                script {
-                    // If using npm and you have a "test" script defined in package.json
-                    sh 'npm test'
-                }
+                bat 'npm test'  // Again, use 'bat' for Windows
             }
         }
 
         stage('Build Application') {
-            when {
-                // This stage runs only if there's a "build" script in package.json
-                expression { return fileExists('package.json') && sh(script: 'npm run build', returnStatus: true) == 0 }
-            }
             steps {
-                // Run the build step, assuming you have a "build" script in package.json
-                script {
-                    sh 'npm run build'
-                }
+                bat 'npm run build'
             }
         }
 
         stage('Deploy Application') {
             steps {
-                // Deploy application to localhost or a staging server (for example, using npm start)
-                script {
-                    sh 'npm start'  // Starts the Node.js application
-                }
+                bat 'npm start'  // Use 'start' to run background tasks on Windows
             }
         }
     }
 
     post {
         success {
-            // Notify on success, you can integrate with email, Slack, etc.
             echo 'Build and deployment succeeded!'
         }
         failure {
-            // Handle failures, e.g., notify on failure
             echo 'Build or deployment failed.'
         }
         always {
-            // Cleanup or archive logs if needed
             echo 'Cleaning up or archiving logs.'
         }
     }
