@@ -1,38 +1,55 @@
 pipeline {
     agent any
 
+    environment {
+        NODE_VERSION = '22.11.0'
+    }
+
+    tools {
+        nodejs 'nodejs-22.11.0'
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git 'https://git.epam.com/neha_jain/my-node-app.git'
+                git 'https://github.com/nehajain221292/nodejs.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                bat 'npm install'  // Use 'bat' instead of 'sh' for Windows
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                bat 'npm test'  // Again, use 'bat' for Windows
             }
         }
 
         stage('Build Application') {
             steps {
-                sh 'npm run build'
+                bat 'npm run build'
             }
         }
 
-        stage('Run Application') {
+        stage('Deploy Application') {
             steps {
-                sh 'npm start'
+                bat 'npm start'  // Use 'start' to run background tasks on Windows
             }
         }
     }
 
     post {
         success {
-            echo 'Application deployed successfully!'
+            echo 'Build and deployment succeeded!'
         }
         failure {
             echo 'Build or deployment failed.'
+        }
+        always {
+            echo 'Cleaning up or archiving logs.'
         }
     }
 }
