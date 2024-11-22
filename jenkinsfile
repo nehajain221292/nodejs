@@ -1,53 +1,79 @@
 pipeline {
-    agent any  // This can be modified to run on a specific node if needed
+    agent any  // Runs the pipeline on any available agent
 
     environment {
-        // You can define environment variables here if needed
-        WORKSPACE_DIR = "${env.WORKSPACE}"
+        // Set any environment variables here, for example, Node.js version
+        NODE_VERSION = '14.x'
+    }
+
+    tools {
+        // Automatically install Node.js using the specified version from the Jenkins tool installation configuration
+        nodejs "${NODE_VERSION}"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                // Clone the Git repository
-                echo 'Checking out the code from GitHub repository'
+                // Checkout the code from GitHub or any Git repository
                 git 'https://github.com/nehajain221292/nodejs.git'  // Replace with your repo URL
             }
         }
 
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
-                // Run the build.bat script on Windows
-                echo 'Running Hello_World.bat script'
-                bat 'Hello_World.bat'  // Runs the batch file in the workspace
+                // Install dependencies using npm
+                script {
+                    // If using npm
+                    sh 'npm install'
+                }
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
-                // You can add your test steps here if applicable
-                echo 'Running tests...'
-                // Example: bat 'test.bat' or any other testing command
+                // Run tests, assuming you have a test script in your package.json
+                script {
+                    // If using npm and you have a "test" script defined in package.json
+                    sh 'npm test'
+                }
             }
         }
 
-        stage('Notify') {
+        stage('Build Application') {
+            when {
+                // This stage runs only if there's a "build" script in package.json
+                expression { return fileExists('package.json') && sh(script: 'npm run build', returnStatus: true) == 0 }
+            }
             steps {
-                // Add any notification steps, like sending an email or posting to a Slack channel
-                echo 'Build completed successfully!'
+                // Run the build step, assuming you have a "build" script in package.json
+                script {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                // Deploy application to localhost or a staging server (for example, using npm start)
+                script {
+                    sh 'npm start'  // Starts the Node.js application
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline succeeded!'
-            // You can add actions to notify users about the success, e.g., sending an email
+            // Notify on success, you can integrate with email, Slack, etc.
+            echo 'Build and deployment succeeded!'
         }
-
         failure {
-            echo 'Pipeline failed.'
-            // You can add actions for failure, e.g., sending a failure notification
+            // Handle failures, e.g., notify on failure
+            echo 'Build or deployment failed.'
+        }
+        always {
+            // Cleanup or archive logs if needed
+            echo 'Cleaning up or archiving logs.'
         }
     }
 }
